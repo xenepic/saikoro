@@ -1123,7 +1123,6 @@ client.on('messageCreate', async msg => {
         console.log(date2 + '：エラー ：ダイスロール：[' + msg.content + ']');
         console.log(error);
         await msg.reply('```\n' + 'このダイスロールはエラーっぽいわ。 すまんな。[' + msg.content + ']\n```');
-        client.login('OTAyMDYxNjQ2OTc1OTk1OTc0.YXY8YA.UuAwdSotOfR6Q7dMJR_QalLTidU');
     } finally {}
 
     //停止命令。運営陣の発言のみ有効。
