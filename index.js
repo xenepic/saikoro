@@ -9,21 +9,25 @@
 *                                                                                                           *
 *************************************************************************************************************/
 
-const token = require('./token');
-const { discordUneiID } = require('./uneiIDList');
+const { Configuration, OpenAIApi } = require('openai');
+require('dotenv').config();
+const token = getEnv('DISCORD_BOT_TOKEN');
+// const { discordUneiID } = require('./uneiIDList');
 
 
 const { pokemons, tokuseis, pokemonPic, types, typeCompatibilities, getAttribute, getPokemonByName, getPokemonByZukanNo, getPokemonByRandom, getTokusei, getDamageMagnification, getTypeCompatibilityS, getTypeCompatibilityD, getTypeCompatibilityByPokemon, getPokemonEmbed, getPCDEmbed } = require('./pokemon');
 const { prefectures, prefRegions, weatherIcons, iconsABC, icons123, getWeatherURL, getWeeklyDate, getWeatherIcon, getWeeklyEmbed, getDailyEmbed } = require('./weather');
-const { Client, Intents } = require('discord.js');
+const { Client, Events, GatewayIntentBits } = require('discord.js');
 const { MessageEmbed } = require('discord.js');
 const { searchFor, getWeaponByMain, getWeaponEmbedByMain, getNoMatchesEmbed, getSubWeaponByName, getWeaponBySub, getSubWeaponListEmbed, getWeaponListEmbed, getWeaponListEmbedBySub, getWeaponListEmbedBySpecial, getSpecialByName, getWeaponBySpecial, getSpecialListEmbed, howManyHitBySub, howManyHitBySpecial, weapons, getFesVoteEmbed, getFesKumiwakeEmbed, weaponsInfo } = require('./splatoon');
 const { getTenhouEmbed, getDoubleRiichiEmbed, getMachiateEmbed, get1shantenEmbed, getMahjongFesEmbed } = require('./mahjong');
 const { getGachaMessage, addSP } = require('./gacha');
 const { getDishEmbed } = require('./dish');
 const { getWordWolfEmbed, getWordWolfMessageList, getWordWolfVoteEmbed, getWordWolfVoteResultEmbed, getWordWolfRuleEmbed } = require('./wordwolf');
+
 const Quiz = require('./quiz.js');
-const client = new Client({ intents: Object.keys(Intents.FLAGS) });
+// const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]});
 
 const fs = require("fs");
 const outFile = 'discordData.csv';
@@ -52,6 +56,10 @@ const knex = knexLib({
 
 const iconsRedAB = ['🅰️', '🅱️'];
 
+
+function getEnv(key){
+    return process?.env[key];
+}
 
 //個人にDMを送る関数
 function sendDM(userId, text, option = {}) {
@@ -299,9 +307,10 @@ function getEqualLengthStr(str, len) {
 
 //与えられたユーザーが運営陣かどうか判定しtrue/falseを返す
 function isFromUnei(user) {
-    if (discordUneiID.map(e => e['ID']).includes(user.id)) return true;
-    else if (discordUneiID.map(e => e['name']).includes(user.tag.split('#')[0])) return true;
-    else return false;
+    // if (discordUneiID.map(e => e['ID']).includes(user.id)) return true;
+    // else if (discordUneiID.map(e => e['name']).includes(user.tag.split('#')[0])) return true;
+    // else return false;
+    return false;
 }
 
 //ファイル書き込み用関数
@@ -870,6 +879,7 @@ const keyFesMahjong = '【麻雀フェス】';
 const keyWordWolf = '【ワードウルフ】';
 const keyDM = '!DM';
 const keyTimer = '!timer';
+const chatGPT = '!c';
 
 
 //!helpで表示するさいころ君コマンド一覧。ちゃんと更新しよう。
@@ -969,6 +979,9 @@ const outputHelp =
 
 - ${keyDM}
     DMでサイコロ君の機能が使えるようになるやで。
+
+- ${chatGPT}
+    AIとおしゃべりできるやで。
 `;
 
 // let tenhouTimer = new Date();
@@ -979,14 +992,13 @@ function getRandomInt(max) {
     return Math.ceil(Math.random() * max);
 }
 
-client.on('ready', () => {
-    console.log(`${client.user.tag} でログインしています。`);
-})
+
 
 
 
 
 client.on('messageCreate', async msg => {
+    
     const date1 = new Date();
     const date2 = date1.getFullYear() + "年" +
         (date1.getMonth() + 1) + "月" +
@@ -2235,6 +2247,26 @@ client.on('messageCreate', async msg => {
             })
     }
 
-})
+    if (msg.content.startsWith(chatGPT)){
+        const configuration = new Configuration({
+            apiKey: process.env.OPENAI_API_KEY,
+        });
+        try{
+            const openai = new OpenAIApi(configuration);
+            const ask = msg.content.slice(chatGPT.length);
+            const res = await openai.createChatCompletion({
+                model: "gpt-3.5-turbo-0301",
+                messages: [{ role: "user", content: ask }],
+            });
+            const answer = res.data.choices[0].message?.content;
+            await msg.reply(answer);
+        }catch(e){
+            msg.reply("AIも休みほしい時があんねん"); 
+        }
+    }
 
+})
+client.on('ready', () => {
+    console.log(`${client.user.tag} でログインしています。`);
+});
 client.login(token);
