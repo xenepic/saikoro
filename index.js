@@ -2247,21 +2247,49 @@ client.on('messageCreate', async msg => {
             })
     }
 
-    if (msg.content.startsWith(chatGPT)){
+    
+    let messages = [];
+    if(!msg.author.bot){
+        let msg_p = msg;
+        let chan = await client.channels.fetch(msg.channelId);
+        messages.push(msg_p);
+        while(msg_p.reference){
+            msg_p = await chan.messages.fetch(msg_p.reference.messageId);
+            if(msg_p && !msg_p.author.bot) messages.push(msg_p);
+        }
+    }
+    let last_message = messages[messages.length-1];
+
+    if (msg.content.startsWith(chatGPT) || last_message.content?.startsWith(chatGPT)){
         const configuration = new Configuration({
             apiKey: process.env.OPENAI_API_KEY,
         });
         try{
+            console.log(msg.content);
+            // console.log(messages);
+            messages = messages.map(e => {
+                return {
+                    role:'user', 
+                    content:e.content.replace(chatGPT, "")
+                }
+            }).reverse();
+            while(messages.length!==1 && messages.reduce((sum,e)=>e.content.length+sum,0)>=200){
+                messages = messages.slice(1);
+            }
+            console.log(messages);
+            console.log("==================");
             const openai = new OpenAIApi(configuration);
             const ask = msg.content.slice(chatGPT.length);
+            const message = {role: "user", content: ask};
             const res = await openai.createChatCompletion({
                 model: "gpt-3.5-turbo-0301",
-                messages: [{ role: "user", content: ask }],
+                messages: messages,
             });
             const answer = res.data.choices[0].message?.content;
             await msg.reply(answer);
         }catch(e){
-            msg.reply("AIも休みほしい時があんねん"); 
+            msg.reply("なんやて？もっかい頼むわ"); 
+            console.log(e);
         }
     }
 
