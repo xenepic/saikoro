@@ -2273,7 +2273,7 @@ client.on('messageCreate', async msg => {
                     content:e.content.replace(chatGPT, "")
                 }
             }).reverse();
-            while(messages.length!==1 && messages.reduce((sum,e)=>e.content.length+sum,0)>=100){
+            while(messages.length!==1 && messages.reduce((sum,e)=>e.content.length+sum,0)>=200){
                 messages = messages.slice(1);
             }
             console.log(messages);
