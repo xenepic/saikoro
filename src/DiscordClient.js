@@ -34,6 +34,11 @@ class DiscordClient{
                 this.Dice.rollDice(msg);
                 break;
             case "keyStop" :
+                if(msg.author.id === process?.env['ADMINISTRATOR_DISCORD_ID']){
+                    Util.log('info', 'さいころ君強制終了コマンド');
+                    await msg.reply('ばいば～い');
+                    await this.client.destroy();
+                }
                 break;
             case "keyUranai" :
                 break;
