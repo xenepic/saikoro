@@ -104,7 +104,6 @@ class Dice extends BotFunctionBase {
             }
         
         }catch(e){
-            console.log(Util);
             Util.log('error', e);
             this.replyMessage(msg, 'なんか失敗したわ、もっかい頼む', {normal:true});
         }

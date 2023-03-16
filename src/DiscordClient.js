@@ -1,6 +1,7 @@
 const { Util } = require('./library/Util');
 const { commands } = require('./library/command');
 const { Dice } = require('./library/function/Dice');
+const { Divination } = require('./library/function/Divination');
 
 class DiscordClient{
     constructor(client){
@@ -41,6 +42,8 @@ class DiscordClient{
                 }
                 break;
             case "keyUranai" :
+                if(!this.Divination) this.Divination = new Divination();
+                this.Divination.doDivination(msg);
                 break;
             case "keyChusen" :
                 break;

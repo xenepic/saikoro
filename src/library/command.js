@@ -1,7 +1,7 @@
 const commands = [
-    { name: "keyDiceRoll", kind: "other", command: ["!d"], description: "クトゥルフ神話っぽいダイスロールを振るやで。\n例）!d 2d6\n例）!d CCB<=20 【酒値チェック】"},
+    { name: "keyDiceRoll", kind: "other", command: ["!d", "【さいころ】", "【サイコロ】", "【ダイス】"], description: "クトゥルフ神話っぽいダイスロールを振るやで。\n例）!d 2d6\n例）!d CCB<=20 【酒値チェック】"},
     { name: "keyStop", kind: "secret", command: ["!stop"], description: ""},
-    { name: "keyUranai", kind: "other", command: ["【占い】"], description: "占いするやで"},
+    { name: "keyUranai", kind: "other", command: ["!divi", "【占い】"], description: "占いするやで"},
     { name: "keyChusen", kind: "other", command: ["【抽選】"], description: "抽選するやで。\nさいころ君のリプに✋のリアクションした人の中から一人選ぶ。\n🔄押したら抽選開始。\n受付時間は5分。"},
     { name: "keyChusenUketsuke", kind: "other", command: ["【抽選受付】"], description: ""},
     { name: "keySuimin", kind: "other", command: ["【睡眠】"], description: "寝れるかどうか決めるやで。"},
