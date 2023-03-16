@@ -3,8 +3,8 @@ const { BotFunctionBase } = require('../BotFunctionBase');
 const { Util } = require('../Util');
 
 class Dice extends BotFunctionBase {
-    constructor(client){
-        super(client, 'DICE');
+    constructor(){
+        super('DICE');
     }
 
     /**

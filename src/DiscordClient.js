@@ -9,7 +9,7 @@ class DiscordClient{
             this.parseMessage(msg);
         })
         this.client.on('ready', () => {
-            console.log(`${client.user.tag} でログインしています。`);
+            Util.log('info', `${client.user.tag} でログインしています。`);
         });
         this.client.login(process?.env['DISCORD_BOT_TOKEN']);
     }
@@ -30,7 +30,7 @@ class DiscordClient{
 
         switch (command) {
             case "keyDiceRoll" :
-                if(!this.Dice) this.Dice = new Dice(this.client);
+                if(!this.Dice) this.Dice = new Dice();
                 this.Dice.rollDice(msg);
                 break;
             case "keyStop" :

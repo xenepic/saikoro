@@ -4,8 +4,7 @@ const { Util } = require('./Util');
 const { commands } = require('./command');
 
 class BotFunctionBase {
-    constructor(client, classification){
-        this.client = client;
+    constructor(classification){
         this.classification = classification;
     }
 
