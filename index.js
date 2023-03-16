@@ -2252,10 +2252,16 @@ client.on('messageCreate', async msg => {
     if(!msg.author.bot){
         let msg_p = msg;
         let chan = await client.channels.fetch(msg.channelId);
-        messages.push(msg_p);
+        messages.push({
+            role: 'user',
+            content: msg_p.content
+        });
         while(msg_p.reference){
             msg_p = await chan.messages.fetch(msg_p.reference.messageId);
-            if(msg_p && !msg_p.author.bot) messages.push(msg_p);
+            if(msg_p) messages.push({
+                role: msg_p.author.bot ? 'assistant' : 'user',
+                content: msg_p.content
+            });
         }
     }
     let last_message = messages[messages.length-1];
@@ -2265,27 +2271,25 @@ client.on('messageCreate', async msg => {
             apiKey: process.env.OPENAI_API_KEY,
         });
         try{
-            console.log(msg.content);
-            // console.log(messages);
-            messages = messages.map(e => {
+            messages = messages.map(message=>{
                 return {
-                    role:'user', 
-                    content:e.content.replace(chatGPT, "")
+                    role: message.role,
+                    content: message.content.replace(chatGPT, '').replace(/\[[0-9]+\]/, '')
                 }
             }).reverse();
-            while(messages.length!==1 && messages.reduce((sum,e)=>e.content.length+sum,0)>=200){
+            while(messages.length!==1 && messages.reduce((sum,message)=>message.content.length+sum,0)>=1000){
                 messages = messages.slice(1);
             }
-            console.log(messages);
-            console.log("==================");
             const openai = new OpenAIApi(configuration);
             const ask = msg.content.slice(chatGPT.length);
-            const message = {role: "user", content: ask};
             const res = await openai.createChatCompletion({
                 model: "gpt-3.5-turbo-0301",
                 messages: messages,
             });
             const answer = res.data.choices[0].message?.content;
+            console.log(`「${msg.content.replace(chatGPT, '')}」\n「${answer}」`);
+            console.log("total tokens:", res.data.usage.total_tokens);
+            console.log("==================");
             await msg.reply(answer);
         }catch(e){
             msg.reply("なんやて？もっかい頼むわ"); 
