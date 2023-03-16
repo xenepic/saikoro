@@ -1,11 +1,12 @@
-const { Util } = requre('./livrary/Util');
-const { commands } = requre('./livrary/command');
+const { Util } = require('./library/Util');
+const { commands } = require('./library/command');
+const { Dice } = require('./library/function/Dice');
 
 class DiscordClient{
     constructor(client){
         this.client = client;
         this.client.on('messageCreate', async msg => {
-    
+            this.parseMessage(msg);
         })
         this.client.on('ready', () => {
             console.log(`${client.user.tag} でログインしています。`);
@@ -14,7 +15,7 @@ class DiscordClient{
     }
 
     /**
-     * メッセージがコマンドメッセージだった場合、
+     * メッセージを解析して、コマンドだった場合各コマンド用関数を実行する
      * @param {*} msg 
      * @returns 
      */
@@ -29,6 +30,8 @@ class DiscordClient{
 
         switch (command) {
             case "keyDiceRoll" :
+                if(!this.Dice) this.Dice = new Dice(this.client);
+                this.Dice.rollDice(msg);
                 break;
             case "keyStop" :
                 break;
