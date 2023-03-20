@@ -100,11 +100,10 @@ class Dice extends BotFunctionBase {
                 } else {
                     await this.replyMessage(msg, output, {normal:true});
                 }
-
             }
         
         }catch(e){
-            Util.log('error', e);
+            Util.error(e);
             this.replyMessage(msg, 'なんか失敗したわ、もっかい頼む', {normal:true});
         }
     }      

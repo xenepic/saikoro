@@ -34,10 +34,19 @@ class Util{
     /**
      * ログを出力する
      * 2023年1月1日0時0分0秒 [DICE] 1d100 <= 20 
+     * @param {string} classification 
      * @param {string} text 
      */
     static log(classification, text){
         console.log(`${this.getTime()[0]} [${classification}] ${text.includes('\n') ? '\n'+text : text}`);
+    }
+
+    /**
+     * エラーを出力する
+     * @param {*} e エラーオブジェクト
+     */
+    static error(e){
+        console.log(`${this.getTime()[0]} [error]\n`, e);
     }
 
     /**
