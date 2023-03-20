@@ -2277,9 +2277,11 @@ client.on('messageCreate', async msg => {
                     content: message.content.replace(chatGPT, '').replace(/\[[0-9]+\]/, '')
                 }
             }).reverse();
-            while(msg.author.id !== getEnv('ADMIN_ID') && essages.length!==1 && messages.reduce((sum,message)=>message.content.length+sum,0)>=1000){
-                messages = messages.slice(1);
-            }
+            if(msg.author.id !== getEnv('ADMIN_ID')){
+                while(essages.length!==1 && messages.reduce((sum,message)=>message.content.length+sum,0)>=1000){
+                    messages = messages.slice(1);
+                }
+            }            
             const openai = new OpenAIApi(configuration);
             const ask = msg.content.slice(chatGPT.length);
             const res = await openai.createChatCompletion({
