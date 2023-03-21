@@ -1,19 +1,42 @@
+const { Client } = require('discord.js');
 const { Util } = require('./library/Util');
 const { DiscordUtil } = require('./library/DiscordUtil');
-const {commands, getBodyText} = require('./library/command');
+const {commands, getCommand, getBodyText} = require('./library/command');
 const { Dice } = require('./library/function/Dice');
 const { Divination } = require('./library/function/Divination');
 const { Lottery } = require('./library/function/Lottery');
 
+/**
+ * discordのclientクラス
+ * clientにログインし、メッセージを解析して、それがコマンドの場合
+ * 各ライブラリの関数を実行してそのレスポンスをリプライする
+ */
 class DiscordClient{
+
+    /**
+     * コンストラクタ
+     * @param {Client} client discordのクライアントオブジェクト 
+     */
     constructor(client){
+        this.acceptable = true;
         this.client = client;
+
+        this.init();        
+    }
+
+    /**
+     * 初期処理
+     */
+    init(){
         this.client.on('messageCreate', async msg => {
-            console.log(msg);
-            this.parseMessage(msg);
+            // !startコマンドのみここで解析
+            if(!this.acceptable && 
+                msg.author.id === process?.env['ADMINISTRATOR_DISCORD_ID'] && 
+                getCommand(msg.content) === 'keyStart') this.acceptable = true;
+            if(this.acceptable) this.parseMessage(msg);
         })
         this.client.on('ready', () => {
-            Util.log(`${client.user.tag} でログインしています。`);
+            Util.log(`${this.client.user.tag} でログインしています。`);
         });
         this.client.login(process?.env['DISCORD_BOT_TOKEN']);
     }
@@ -24,21 +47,16 @@ class DiscordClient{
      * @returns 
      */
     async parseMessage(msg){
-        console.log("AAA" + msg.content);
-        let command = '';
-        commands.forEach(e => {
-            e.command.forEach(comm => {
-                if(msg.content.startsWith(comm)) command = e.name;
-            });
-        });
+        let message;
+        let command = getCommand(msg.content);
         if (!command) return ;
-        let replyTextObject;
-        let replyEmbedObject;
+        let response;
 
         switch (command) {
             case "keyDiceRoll" : // ダイスロール
+                message = getBodyText(msg, 'keyDiceRoll');
                 if(!this.Dice) this.Dice = new Dice();
-                let response = await this.Dice.rollDice(msg.content);
+                response = await this.Dice.rollDice(msg.content);
                 if(response){
                     let style;
                     if (response.isComparison) {
@@ -47,22 +65,26 @@ class DiscordClient{
                     } else {
                         style = {normal:true};
                     }
-                    replyTextObject = {
-                        text: response.text,
-                        style: style
-                    };
+                    DiscordUtil.replyText(msg, response.text, style);
                 }
                 break;
             case "keyStop" :
                 if(msg.author.id === process?.env['ADMINISTRATOR_DISCORD_ID']){
-                    Util.log('さいころ君強制終了コマンド');
-                    await msg.reply('ばいば～い');
-                    await this.client.destroy();
+                    Util.log('さいころ君停止コマンド');
+                    await msg.reply('さいころ君を停止します');
+                    this.acceptable = false;
+                }
+                break;
+            case "keyStart" :
+                if(msg.author.id === process?.env['ADMINISTRATOR_DISCORD_ID']){
+                    Util.log('さいころ君再稼働コマンド');
+                    await msg.reply('さいころ君を再稼働します');
                 }
                 break;
             case "keyUranai" :
                 if(!this.Divination) this.Divination = new Divination();
-                this.Divination.doDivination(msg);
+                response = await this.Divination.doDivination(msg);
+                if(response) DiscordUtil.replyText(msg, response, {normal:true});
                 break;
             case "keyChusen" :
                 if(!this.Lottery) this.Lottery = new Lottery();
@@ -117,9 +139,11 @@ class DiscordClient{
             case "chatGPT" :
                 break;
         }
-        if(replyTextObject){
-            await DiscordUtil.replyText(msg, replyTextObject.text, replyTextObject.style);
-        }
+
+    }
+    
+    isRestartCommand(msg){
+
     }
 
 

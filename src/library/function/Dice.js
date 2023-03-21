@@ -12,9 +12,8 @@ class Dice{
      */
     async rollDice(msg){
         try{
-            Util.log("[DICE] roll dice.");
             // 本文を抽出
-            let message = getBodyText(msg, 'keyDiceRoll').replace(/(c|C)(c|C)(b|B)/, '1d100');
+            let message = msg.replace(/(c|C)(c|C)(b|B)/, '1d100');
 
             let diceRollTimes = message.match(/^(\d+)d(\d+)((<=|>=|<|>)\d+)?(.*)$/);
             let text = '';

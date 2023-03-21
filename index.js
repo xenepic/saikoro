@@ -14,8 +14,8 @@ const { Client, Events, GatewayIntentBits, Partials } = require('discord.js');
 const { DiscordClient } = require('./src/DiscordClient');
 
 const client = new Client({
-	intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions],
-	// partials: [Partials.Message, Partials.Channel, Partials.Reaction],
+	intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessageReactions],
+	partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
 
 // discordBot開始
