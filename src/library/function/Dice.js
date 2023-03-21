@@ -1,23 +1,23 @@
 const { Message } = require('discord.js');
-const { BotFunctionBase } = require('../BotFunctionBase');
 const { Util } = require('../Util');
+const {commands, getBodyText} = require('../command');
 
-class Dice extends BotFunctionBase {
+class Dice{
     constructor(){
-        super('DICE');
     }
 
     /**
-     * ダイスロールの結果をリプライする
-     * @param {Message} msg 
+     * ダイスロールの結果を返す
+     * @param {string} msg 
      */
     async rollDice(msg){
         try{
+            Util.log("[DICE] roll dice.");
             // 本文を抽出
-            let message = this.getBodyText(msg, 'keyDiceRoll').replace(/(c|C)(c|C)(b|B)/, '1d100');
+            let message = getBodyText(msg, 'keyDiceRoll').replace(/(c|C)(c|C)(b|B)/, '1d100');
 
             let diceRollTimes = message.match(/^(\d+)d(\d+)((<=|>=|<|>)\d+)?(.*)$/);
-            let output = '';
+            let text = '';
             let isComparison = false;
             let isSuccess;
             let result = 0;
@@ -54,17 +54,16 @@ class Dice extends BotFunctionBase {
                 }
 
                 //ダイス目の結果を出力に追加する。複数ダイスの場合は各ダイス目の値も追加する。
-                output += msg.content + ' ： ';
+                text += message + ' ： ';
                 if (diceRollTimes[1] === 1) {
-                    output += '[' + result + ']';
+                    text += '[' + result + ']';
                 } else {
-                    output += '[' + resultEach.join() + ']' + '=[' + result + ']';
+                    text += '[' + resultEach.join() + ']' + '=[' + result + ']';
                 }
 
                 //比較の場合は「成功」「失敗」などの文字列を追加する。
                 if (isComparison) {
                     let border = diceRollTimes[3].replace(diceRollTimes[4], '');
-                    // await msg.channel.send('比較モード');
                     if (diceRollTimes[4] === '<') {
                         if (result < border) isSuccess = true;
                         else isSuccess = false;
@@ -80,31 +79,27 @@ class Dice extends BotFunctionBase {
                     }
 
                     if (isSuccess && result <= 5 && diceRollTimes[1] === 1 && diceRollTimes[2] === 100) {
-                        output += ' ➔ クリティカル/成功';
+                        text += ' ➔ クリティカル/成功';
                     } else if (isSuccess && result <= 10 && diceRollTimes[1] === 1 && diceRollTimes[2] === 100) {
-                        output += ' ➔ スペシャル/成功';
+                        text += ' ➔ スペシャル/成功';
                     } else if (!isSuccess && result >= 96 && diceRollTimes[1] === 1 && diceRollTimes[2] === 100) {
-                        output += ' ➔ ファンブル/致命的失敗';
+                        text += ' ➔ ファンブル/致命的失敗';
                     } else if (isSuccess) {
-                        output += ' ➔ 成功';
+                        text += ' ➔ 成功';
                     } else if (!isSuccess) {
-                        output += ' ➔ 失敗';
+                        text += ' ➔ 失敗';
                     }
 
                 }
 
-                //結果に応じて異なる色で出力
-                if (isComparison) {
-                    if (isSuccess) await this.replyMessage(msg, output, {color:'green'});
-                    else await this.replyMessage(msg, output, {color:'red'});
-                } else {
-                    await this.replyMessage(msg, output, {normal:true});
-                }
+                // 結果を返す
+                let output = {text, isComparison, isSuccess};
+                return output;
             }
         
         }catch(e){
             Util.error(e);
-            this.replyMessage(msg, 'なんか失敗したわ、もっかい頼む', {normal:true});
+            return ;
         }
     }      
 

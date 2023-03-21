@@ -37,8 +37,8 @@ class Util{
      * @param {string} classification 
      * @param {string} text 
      */
-    static log(classification, text){
-        console.log(`${this.getTime()[0]} [${classification}] ${text.includes('\n') ? '\n'+text : text}`);
+    static log(text){
+        console.log(`${this.getTime()[0]} ${text.includes('\n') ? '\n'+text : text}`);
     }
 
     /**

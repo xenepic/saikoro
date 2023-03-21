@@ -1,5 +1,5 @@
 const { Message } = require('discord.js');
-const { BotFunctionBase } = require('../BotFunctionBase');
+const { BotFunctionBase } = require('../DiscordUtil');
 const { Util } = require('../Util');
 
 class template extends BotFunctionBase {

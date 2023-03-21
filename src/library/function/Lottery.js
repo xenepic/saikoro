@@ -1,12 +1,11 @@
 const { Message } = require('discord.js');
-const { BotFunctionBase } = require('../BotFunctionBase');
+const { BotFunctionBase } = require('../DiscordUtil');
 const { Util } = require('../Util');
 const { AttachmentBuilder, EmbedBuilder } = require('discord.js');
 
 
-class Lottery extends BotFunctionBase {
+class Lottery{
     constructor(){
-        super('TEMPLATE');
     }
 
     async do(msg){

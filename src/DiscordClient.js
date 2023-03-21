@@ -1,5 +1,6 @@
 const { Util } = require('./library/Util');
-const { commands } = require('./library/command');
+const { DiscordUtil } = require('./library/DiscordUtil');
+const {commands, getBodyText} = require('./library/command');
 const { Dice } = require('./library/function/Dice');
 const { Divination } = require('./library/function/Divination');
 const { Lottery } = require('./library/function/Lottery');
@@ -8,20 +9,22 @@ class DiscordClient{
     constructor(client){
         this.client = client;
         this.client.on('messageCreate', async msg => {
+            console.log(msg);
             this.parseMessage(msg);
         })
         this.client.on('ready', () => {
-            Util.log('info', `${client.user.tag} でログインしています。`);
+            Util.log(`${client.user.tag} でログインしています。`);
         });
         this.client.login(process?.env['DISCORD_BOT_TOKEN']);
     }
 
     /**
-     * メッセージを解析して、コマンドだった場合各コマンド用関数を実行する
+     * メッセージを解析して、コマンドだった場合実行結果を取得し、msgにリプライする
      * @param {*} msg 
      * @returns 
      */
     async parseMessage(msg){
+        console.log("AAA" + msg.content);
         let command = '';
         commands.forEach(e => {
             e.command.forEach(comm => {
@@ -29,15 +32,30 @@ class DiscordClient{
             });
         });
         if (!command) return ;
+        let replyTextObject;
+        let replyEmbedObject;
 
         switch (command) {
-            case "keyDiceRoll" :
+            case "keyDiceRoll" : // ダイスロール
                 if(!this.Dice) this.Dice = new Dice();
-                this.Dice.rollDice(msg);
+                let response = await this.Dice.rollDice(msg.content);
+                if(response){
+                    let style;
+                    if (response.isComparison) {
+                        if (response.isSuccess) style = {color:'green'};
+                        else style = {color:'red'};
+                    } else {
+                        style = {normal:true};
+                    }
+                    replyTextObject = {
+                        text: response.text,
+                        style: style
+                    };
+                }
                 break;
             case "keyStop" :
                 if(msg.author.id === process?.env['ADMINISTRATOR_DISCORD_ID']){
-                    Util.log('info', 'さいころ君強制終了コマンド');
+                    Util.log('さいころ君強制終了コマンド');
                     await msg.reply('ばいば～い');
                     await this.client.destroy();
                 }
@@ -98,6 +116,9 @@ class DiscordClient{
                 break;
             case "chatGPT" :
                 break;
+        }
+        if(replyTextObject){
+            await DiscordUtil.replyText(msg, replyTextObject.text, replyTextObject.style);
         }
     }
 
