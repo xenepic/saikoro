@@ -1,10 +1,10 @@
-const { Client } = require('discord.js');
+const { Client, Events } = require('discord.js');
 const { Util } = require('./library/Util');
 const { DiscordUtil } = require('./library/DiscordUtil');
-const {commands, getCommand, getBodyText} = require('./library/command');
-const { Dice } = require('./library/function/Dice');
-const { Divination } = require('./library/function/Divination');
-const { Lottery } = require('./library/function/Lottery');
+const { getCommand, getBodyText } = require('./library/command');
+const { Dice } = require('./library/Dice');
+const { Divination } = require('./library/Divination');
+const { Lottery } = require('./library/discord/Lottery');
 
 /**
  * discordのclientクラス
@@ -28,16 +28,24 @@ class DiscordClient{
      * 初期処理
      */
     init(){
-        this.client.on('messageCreate', async msg => {
+        // メッセージ検出時の処理
+        this.client.on(Events.MessageCreate, async msg => {
             // !startコマンドのみここで解析
             if(!this.acceptable && 
                 msg.author.id === process?.env['ADMINISTRATOR_DISCORD_ID'] && 
                 getCommand(msg.content) === 'keyStart') this.acceptable = true;
             if(this.acceptable) this.parseMessage(msg);
-        })
-        this.client.on('ready', () => {
+        });
+
+        // リアクション付与検出時の処理
+
+
+        // クライアントログイン完了時の処理
+        this.client.on(Events.ClientReady, () => {
             Util.log(`${this.client.user.tag} でログインしています。`);
         });
+
+        // クライアントにログイン
         this.client.login(process?.env['DISCORD_BOT_TOKEN']);
     }
 
@@ -47,16 +55,15 @@ class DiscordClient{
      * @returns 
      */
     async parseMessage(msg){
-        let message;
         let command = getCommand(msg.content);
+        let message = getBodyText(msg.content, command);
         if (!command) return ;
         let response;
 
         switch (command) {
             case "keyDiceRoll" : // ダイスロール
-                message = getBodyText(msg, 'keyDiceRoll');
                 if(!this.Dice) this.Dice = new Dice();
-                response = await this.Dice.rollDice(msg.content);
+                response = await this.Dice.rollDice(message);
                 if(response){
                     let style;
                     if (response.isComparison) {
@@ -83,12 +90,12 @@ class DiscordClient{
                 break;
             case "keyUranai" :
                 if(!this.Divination) this.Divination = new Divination();
-                response = await this.Divination.doDivination(msg);
+                response = await this.Divination.doDivination(msg.author.username);
                 if(response) DiscordUtil.replyText(msg, response, {normal:true});
                 break;
             case "keyChusen" :
                 if(!this.Lottery) this.Lottery = new Lottery();
-                this.Lottery.do(msg);
+                this.Lottery.acceptLots(msg);
                 break;
             case "keyChusenUketsuke" :
                 break;

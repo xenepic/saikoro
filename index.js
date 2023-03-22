@@ -10,7 +10,7 @@
 *************************************************************************************************************/
 
 require('dotenv').config();
-const { Client, Events, GatewayIntentBits, Partials } = require('discord.js');
+const { Client, GatewayIntentBits, Partials } = require('discord.js');
 const { DiscordClient } = require('./src/DiscordClient');
 
 const client = new Client({

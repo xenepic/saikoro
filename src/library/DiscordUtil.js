@@ -59,11 +59,36 @@ class DiscordUtil {
      * @param {Object} imageUrls 添付画像とサムネ画像のURL {iamge:'./xxx.jpeg', thumbnail:'C:/local/folder/yyy.jpeg'}
      */
     static async replyEmbed(msg, embed, imageUrls){
+        Util.log(`[EMBED]:${embed.data.title}`);
+        let messageObj = await DiscordUtil._createEmbedMessageObject(embed, imageUrls);
+        return msg.reply(messageObj);
+    }
+
+    /**
+     * 送信したEmbedを編集する。
+     * @param {Message} msg 編集するもとのメッセージオブジェクト
+     * @param {Embed} embed 変更先のembedオブジェクト
+     * @param {Object} imageUrls 添付画像とサムネ画像のURL {iamge:'./xxx.jpeg', thumbnail:'C:/local/folder/yyy.jpeg'}
+     */
+    static async editEmbed(msg, embed, imageUrls){
+        let messageObj = await DiscordUtil._createEmbedMessageObject(embed, imageUrls);
+        return msg.edit(messageObj);
+    }
+
+    /**
+     * メッセージ送信（編集）用のエンベッド付きメッセージオブジェクトを返す
+     * @param {Embed} embed 変更先のembedオブジェクト
+     * @param {Object} imageUrls 添付画像とサムネ画像のURL {iamge:'./xxx.jpeg', thumbnail:'C:/local/folder/yyy.jpeg'}
+     * @return {Object} 
+     */
+    static async _createEmbedMessageObject(embed, imageUrls){
         let messageObj = {};
-        Util.log(`${embed.title}\n${embed.description}`);
+        // Util.log(`[EMBED]:${embed.data.title}`);
         messageObj.files = [];
+
+        if(!embed.color) embed.setColor(0x0099FF);
         // 添付画像
-        if(imageUrls.image){
+        if(imageUrls?.image){
             let ext = imageUrls.image.split('.').pop();
             const attachment = new AttachmentBuilder()
                 .setName('attachmentFile.' + ext)
@@ -72,7 +97,7 @@ class DiscordUtil {
             messageObj.files.push(attachment);
         }
         // サムネイル画像
-        if(imageUrls.thumbnail){
+        if(imageUrls?.thumbnail){
             let ext = imageUrls.thumbnail.split('.').pop();
             const thumbnail = new AttachmentBuilder()
                 .setName('thumbnailFile.' + ext)
@@ -90,7 +115,8 @@ class DiscordUtil {
         messageObj.files.push(authorIcon);
 
         messageObj.embeds = [embed];
-        return msg.reply(messageObj);
+        
+        return messageObj;
     }
 }
 

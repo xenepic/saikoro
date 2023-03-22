@@ -1,6 +1,4 @@
-const { Message } = require('discord.js');
-const { Util } = require('../Util');
-const {commands, getBodyText} = require('../command');
+const { Util } = require('./Util');
 
 class Dice{
     constructor(){

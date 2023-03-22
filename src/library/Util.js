@@ -60,6 +60,23 @@ class Util{
         output = output.slice(-parseInt(len));
         return output
     }
+
+    /**
+     * 配列の中からランダム1つ要素を返す
+     * @param {Array} arr 
+     * @returns 
+     */
+    static getRandomElement(arr){
+        if(!arr) return;
+        return arr[Util.getRandomInt(arr.length)];
+    }
+
+
+    static emoji = {
+        raised_hand: '✋',
+        arrows_counterclockwise: '🔄',
+        arrow_right: '➡️'
+    };
 }
 
 module.exports = { Util }

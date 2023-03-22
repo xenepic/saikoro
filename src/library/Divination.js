@@ -1,6 +1,4 @@
-const { Message } = require('discord.js');
-const { BotFunctionBase } = require('../DiscordUtil');
-const { Util } = require('../Util');
+const { Util } = require('./Util');
 
 class Divination{
     constructor(){

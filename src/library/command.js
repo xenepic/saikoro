@@ -58,7 +58,7 @@ const commands = [
         commandKeys.forEach(key => {
             message = message.replace(key, '');
         });
-        message = message.replace(/(^ )|(^　)/, '');
+        message = message.replace(/(^ +)|(^　+)/, '');
         return message;
     }
 
