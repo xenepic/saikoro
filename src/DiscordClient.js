@@ -1,8 +1,8 @@
 const { Client, Events } = require('discord.js');
 const { Util } = require('./library/Util');
 const { DiscordUtil } = require('./library/DiscordUtil');
-const { getCommand, getBodyText } = require('./library/command');
-const { Dice } = require('./library/Dice');
+const { commands, getCommand, getBodyText } = require('./library/command');
+const { Random } = require('./library/Random');
 const { Divination } = require('./library/Divination');
 const { Lottery } = require('./library/discord/Lottery');
 
@@ -62,8 +62,8 @@ class DiscordClient{
 
         switch (command) {
             case "keyDiceRoll" : // ダイスロール
-                if(!this.Dice) this.Dice = new Dice();
-                response = await this.Dice.rollDice(message);
+                if(!this.Random) this.Random = new Random();
+                response = await this.Random.rollDice(message);
                 if(response){
                     let style;
                     if (response.isComparison) {
@@ -72,7 +72,7 @@ class DiscordClient{
                     } else {
                         style = {normal:true};
                     }
-                    DiscordUtil.replyText(msg, response.text, style);
+                    DiscordUtil.replyCodeText(msg, [{text:response.text, style}]);
                 }
                 break;
             case "keyStop" :
@@ -91,21 +91,39 @@ class DiscordClient{
             case "keyUranai" :
                 if(!this.Divination) this.Divination = new Divination();
                 response = await this.Divination.doDivination(msg.author.username);
-                if(response) DiscordUtil.replyText(msg, response, {normal:true});
+                if(response) DiscordUtil.replyCodeText(msg, [{text:response, style:{normal:true}}]);
                 break;
             case "keyChusen" :
                 if(!this.Lottery) this.Lottery = new Lottery();
                 this.Lottery.acceptLots(msg);
                 break;
-            case "keyChusenUketsuke" :
-                break;
             case "keySuimin" :
-                break;
-            case "keyKishou" :
+                if(!this.Random) this.Random = new Random();
+                response = await this.Random.goToBed(message);                
+                DiscordUtil.replyCodeText(msg, [response]);
                 break;
             case "keyPokeFromNameShousai" :
                 break;
             case "keyHelp" :
+                let textArr = [];
+                textArr.push({
+                    text: 'さいころ君で使えるコマンド一覧です。\nコマンド名：コマンド1, コマンド2, ...'
+                });
+                textArr.push({
+                    codeArray:[{text: 'コマンドの説明', style:{normal:true}}]
+                });
+                textArr.push({
+                    text: '\nとなっています\n\n'
+                });
+                commands.filter(command=>command.title && command.kind != 'secret').forEach((command, index) => {
+                    textArr.push({
+                        text: '\n' + command.title + '：' + command.command.join(', ') + '\n'
+                    });
+                    textArr.push({
+                        codeArray:[{text: command.description, style:{normal:true}}]
+                    });
+                });
+                DiscordUtil.replyComplexText(msg, textArr);
                 break;
             case "keyWeather" :
                 break;
