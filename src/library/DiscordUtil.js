@@ -4,57 +4,134 @@ const { Util } = require('./Util');
 const { AttachmentBuilder, EmbedBuilder } = require('discord.js');
 
 class DiscordUtil {
+
+    static color = {
+        gray : 30,
+        red : 31,
+        green : 32,
+        yellow : 33,
+        blue : 34,
+        pink : 35,
+        water : 36,
+        white : 37
+    };
+    static backcolor = {
+        darkblue : 40,
+        orange : 41,
+        gray : 42,
+        lightgray : 43,
+        morelightgray : 44,
+        indigo : 45,
+        gray2 : 46,
+        white : 47
+    };
+
     /**
-     * メッセージに平文をリプライする。装飾をつけることが出来る。
-     * 参考：https://gist.github.com/sevenc-nanashi/67bfed2bdd0758eb20ac9bcd6fd88f84
-     * @param {Message} msg リプライを送るもとのメッセージ
-     * @param {string} text 送るリプライの文章
-     * @param {Object} style リプライの装飾 {normal:bool, bold:bool, underbar:bool, 
-     *                                      color:'gray'|'red'|'green'|'yellow'|'blue'|'pink'|'water'|'white', 
-     *                                      backcolor:'darkblue'|'orange'|'gray'|'lightgray'|'morelightgray'|'indigo'|'gray2'|'white'}
-     * @returns 
+     * メッセージに平文をリプライする。
+     * @param {Message} msg 
+     * @param {string} text 
+     * @returns {Message}
      */
-    static async replyText(msg, text, style){
+    static async replyText(msg, text){
         try{
             Util.log(text);
-            if(!style){
-                return msg.reply(text);
-            }
-            let keyword =[];
-            let color = {
-                gray : 30,
-                red : 31,
-                green : 32,
-                yellow : 33,
-                blue : 34,
-                pink : 35,
-                water : 36,
-                white : 37
-            };
-            let backcolor = {
-                darkblue : 40,
-                orange : 41,
-                gray : 42,
-                lightgray : 43,
-                morelightgray : 44,
-                indigo : 45,
-                gray2 : 46,
-                white : 47
-            };
+            return msg.reply(text);
+        }catch(e){
+            Util.error(e);
+            return msg.reply("エラーやわ");
+        }
+    }
 
-            if(style.normal) return msg.reply('```\n' + text + '\n```');
-            if(style.bold) keyword.push('1');
-            else if(style.underbar) keyword.push('4');
-            if(style.color) keyword.push(color[style.color]);
-            if(style.backcolor) keyword.push(backcolor[style.backcolor]);
+    /**
+     * メッセージに装飾文をリプライする。
+     * 参考：https://gist.github.com/sevenc-nanashi/67bfed2bdd0758eb20ac9bcd6fd88f84
+     * @param {Message} msg リプライを送るもとのメッセージ
+     * @param {Array} textArray リプライする文章とスタイルの配列
+     *                          [{text:'reply text', style: {
+     *                              normal      :bool, 
+     *                              bold        :bool, 
+    *                               underbar    :bool, 
+     *                              color       :'gray'|'red'|'green'|'yellow'|'blue'|'pink'|'water'|'white', 
+     *                              backcolor   :'darkblue'|'orange'|'gray'|'lightgray'|'morelightgray'|'indigo'|'gray2'|'white'}
+     *                              }] 
+     * @returns {Message}
+     */
+    static async replyCodeText(msg, textArray){
+        try{
+            let text = '';
 
-            let replyText = '```ansi\n' + '[' + keyword.join(';') + 'm' + text + '\n```';
+            textArray.forEach(it => {
+                text += DiscordUtil._makeStyleKeyword(it.style) + it.text;
+            });
+
+            let replyText = '```ansi\n' + text + '\n```';
+
             return msg.reply(replyText);
         }catch(e){
             Util.error(e);
             return msg.reply('エラーやわ。');
         }
         
+    }
+
+    /**
+     * メッセージに平文と装飾文が混じった文章をリプライする。
+     * 参考：https://gist.github.com/sevenc-nanashi/67bfed2bdd0758eb20ac9bcd6fd88f84
+     * @param {Message} msg リプライを送るもとのメッセージ
+     * @param {Array} textArray リプライする文章とスタイルの配列
+     *                          [
+     *                              {
+     *                                  text:'xxx'
+     *                              },
+     *                              {
+     *                                  codeArray:[
+     *                                      {
+     *                                          text:'xxx',
+     *                                          style:{normal:true}
+     *                                      },
+     *                                      {
+     *                                          text:'xxx',
+     *                                          style:{color:'red', backcolor:'gray'}
+     *                                      }
+     *                                  ]
+     *                                  
+     *                              }
+     *                          ]
+     * @returns {Message}
+     */
+    static async replyComplexText(msg, textArray){
+        try{
+            // Util.log(text);
+            let text = '';
+            textArray.forEach(it => {
+                if(it.text) text += it.text;
+                else{
+                    let codeBlock = '';
+                    it.codeArray.forEach(code => {
+                        codeBlock += DiscordUtil._makeStyleKeyword(code.style) + code.text;
+                    });
+                    text += '```ansi\n' + codeBlock + '\n```';                    
+                }
+            });
+
+            return msg.reply(text);
+        }catch(e){
+            Util.error(e);
+            return msg.reply('エラーやわ。');
+        }
+        
+    }
+
+    static _makeStyleKeyword(style){
+        if(!style) return '';
+        let keyword =[];
+        
+        if(style.bold) keyword.push('1');
+        else if(style.underbar) keyword.push('4');
+        if(style.color) keyword.push(DiscordUtil.color[style.color]);
+        if(style.backcolor) keyword.push(DiscordUtil.backcolor[style.backcolor]);
+        if(style.normal) keyword = ['0'];
+        return '[0m[' + keyword.join(';') + 'm';
     }
 
 

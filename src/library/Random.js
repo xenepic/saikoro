@@ -102,7 +102,7 @@ class Random{
 
     /**
      * 睡眠機能。睡眠成功or睡眠失敗を返す。
-     * @returns 
+     * @returns {Object} {text:'成功/失敗', style:{...}}
      */
     goToBed(){
         let text;
