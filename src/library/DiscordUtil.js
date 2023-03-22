@@ -15,40 +15,46 @@ class DiscordUtil {
      * @returns 
      */
     static async replyText(msg, text, style){
-        Util.log(text);
-        if(!style){
-            return msg.reply(text);
+        try{
+            Util.log(text);
+            if(!style){
+                return msg.reply(text);
+            }
+            let keyword =[];
+            let color = {
+                gray : 30,
+                red : 31,
+                green : 32,
+                yellow : 33,
+                blue : 34,
+                pink : 35,
+                water : 36,
+                white : 37
+            };
+            let backcolor = {
+                darkblue : 40,
+                orange : 41,
+                gray : 42,
+                lightgray : 43,
+                morelightgray : 44,
+                indigo : 45,
+                gray2 : 46,
+                white : 47
+            };
+
+            if(style.normal) return msg.reply('```\n' + text + '\n```');
+            if(style.bold) keyword.push('1');
+            else if(style.underbar) keyword.push('4');
+            if(style.color) keyword.push(color[style.color]);
+            if(style.backcolor) keyword.push(backcolor[style.backcolor]);
+
+            let replyText = '```ansi\n' + '[' + keyword.join(';') + 'm' + text + '\n```';
+            return msg.reply(replyText);
+        }catch(e){
+            Util.error(e);
+            return msg.reply('エラーやわ。');
         }
-        let keyword =[];
-        let color = {
-            gray : 30,
-            red : 31,
-            green : 32,
-            yellow : 33,
-            blue : 34,
-            pink : 35,
-            water : 36,
-            white : 37
-        };
-        let backcolor = {
-            darkblue : 40,
-            orange : 41,
-            gray : 42,
-            lightgray : 43,
-            morelightgray : 44,
-            indigo : 45,
-            gray2 : 46,
-            white : 47
-        };
-
-        if(style.normal) return msg.reply('```\n' + text + '\n```');
-        if(style.bold) keyword.push('1');
-        else if(style.underbar) keyword.push('4');
-        if(style.color) keyword.push(color[style.color]);
-        if(style.backcolor) keyword.push(backcolor[style.backcolor]);
-
-        let replyText = '```ansi\n' + '[' + keyword.join(';') + 'm' + text + '\n```';
-        return msg.reply(replyText);
+        
     }
 
 
@@ -59,9 +65,14 @@ class DiscordUtil {
      * @param {Object} imageUrls 添付画像とサムネ画像のURL {iamge:'./xxx.jpeg', thumbnail:'C:/local/folder/yyy.jpeg'}
      */
     static async replyEmbed(msg, embed, imageUrls){
-        Util.log(`[EMBED]:${embed.data.title}`);
-        let messageObj = await DiscordUtil._createEmbedMessageObject(embed, imageUrls);
-        return msg.reply(messageObj);
+        try{
+            Util.log(`[EMBED]:${embed.data.title}`);
+            let messageObj = await DiscordUtil._createEmbedMessageObject(embed, imageUrls);
+            return msg.reply(messageObj);
+        }catch(e){
+            Util.error(e);
+            return msg.reply('エラーやわ。');
+        }
     }
 
     /**
@@ -71,8 +82,13 @@ class DiscordUtil {
      * @param {Object} imageUrls 添付画像とサムネ画像のURL {iamge:'./xxx.jpeg', thumbnail:'C:/local/folder/yyy.jpeg'}
      */
     static async editEmbed(msg, embed, imageUrls){
-        let messageObj = await DiscordUtil._createEmbedMessageObject(embed, imageUrls);
-        return msg.edit(messageObj);
+        try{
+            let messageObj = await DiscordUtil._createEmbedMessageObject(embed, imageUrls);
+            return msg.edit(messageObj);
+        }catch(e){
+            Util.error(e);
+            return;
+        }
     }
 
     /**

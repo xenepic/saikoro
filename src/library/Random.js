@@ -1,6 +1,6 @@
 const { Util } = require('./Util');
 
-class Dice{
+class Random{
     constructor(){
     }
 
@@ -98,9 +98,26 @@ class Dice{
             Util.error(e);
             return ;
         }
-    }      
+    }
+
+    /**
+     * 睡眠機能。睡眠成功or睡眠失敗を返す。
+     * @returns 
+     */
+    goToBed(){
+        let text;
+        let style;
+        if(Util.getRandomInt(10)<6) {
+            text = '睡眠成功！ﾈﾛ';
+            style = {color:'green'};
+        }else{
+            text = '睡眠失敗！夜は長いよ。';
+            style = {color:'red'};
+        }
+        return {text, style};
+    }
 
 
 }
 
-module.exports = { Dice };
+module.exports = { Random };

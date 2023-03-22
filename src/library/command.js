@@ -4,7 +4,6 @@ const commands = [
     { name: "keyStart", kind: "secret", command: ["!start"], description: ""},
     { name: "keyUranai", kind: "other", command: ["!divi", "【占い】"], description: "占いするやで"},
     { name: "keyChusen", kind: "other", command: ["【抽選】"], description: "抽選するやで。\nさいころ君のリプに✋のリアクションした人の中から一人選ぶ。\n🔄押したら抽選開始。\n受付時間は5分。"},
-    { name: "keyChusenUketsuke", kind: "other", command: ["【抽選受付】"], description: ""},
     { name: "keySuimin", kind: "other", command: ["【睡眠】"], description: "寝れるかどうか決めるやで。"},
     { name: "keyKishou", kind: "other", command: ["【起床】"], description: "起きれるかどうか決めるやで。"},
     { name: "keyPokeFromNameShousai", kind: "poke", command: ["!poke", "【ポケモン】"], description: "ポケモンの情報を検索するやで"},

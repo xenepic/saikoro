@@ -2,7 +2,7 @@ const { Client, Events } = require('discord.js');
 const { Util } = require('./library/Util');
 const { DiscordUtil } = require('./library/DiscordUtil');
 const { getCommand, getBodyText } = require('./library/command');
-const { Dice } = require('./library/Dice');
+const { Random } = require('./library/Random');
 const { Divination } = require('./library/Divination');
 const { Lottery } = require('./library/discord/Lottery');
 
@@ -62,8 +62,8 @@ class DiscordClient{
 
         switch (command) {
             case "keyDiceRoll" : // ダイスロール
-                if(!this.Dice) this.Dice = new Dice();
-                response = await this.Dice.rollDice(message);
+                if(!this.Random) this.Random = new Random();
+                response = await this.Random.rollDice(message);
                 if(response){
                     let style;
                     if (response.isComparison) {
@@ -97,9 +97,10 @@ class DiscordClient{
                 if(!this.Lottery) this.Lottery = new Lottery();
                 this.Lottery.acceptLots(msg);
                 break;
-            case "keyChusenUketsuke" :
-                break;
             case "keySuimin" :
+                if(!this.Random) this.Random = new Random();
+                response = await this.Random.goToBed(message);                
+                DiscordUtil.replyText(msg, response.text, response.style);
                 break;
             case "keyKishou" :
                 break;
