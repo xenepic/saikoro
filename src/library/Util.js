@@ -37,8 +37,8 @@ class Util{
      * @param {string} classification 
      * @param {string} text 
      */
-    static log(classification, text){
-        console.log(`${this.getTime()[0]} [${classification}] ${text.includes('\n') ? '\n'+text : text}`);
+    static log(text){
+        console.log(`${this.getTime()[0]} ${text.includes('\n') ? '\n'+text : text}`);
     }
 
     /**
@@ -60,6 +60,23 @@ class Util{
         output = output.slice(-parseInt(len));
         return output
     }
+
+    /**
+     * 配列の中からランダム1つ要素を返す
+     * @param {Array} arr 
+     * @returns 
+     */
+    static getRandomElement(arr){
+        if(!arr) return;
+        return arr[Util.getRandomInt(arr.length)];
+    }
+
+
+    static emoji = {
+        raised_hand: '✋',
+        arrows_counterclockwise: '🔄',
+        arrow_right: '➡️'
+    };
 }
 
 module.exports = { Util }

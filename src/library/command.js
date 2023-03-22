@@ -1,6 +1,7 @@
 const commands = [
     { name: "keyDiceRoll", kind: "other", command: ["!d", "【さいころ】", "【サイコロ】", "【ダイス】"], description: "クトゥルフ神話っぽいダイスロールを振るやで。\n例）!d 2d6\n例）!d CCB<=20 【酒値チェック】"},
     { name: "keyStop", kind: "secret", command: ["!stop"], description: ""},
+    { name: "keyStart", kind: "secret", command: ["!start"], description: ""},
     { name: "keyUranai", kind: "other", command: ["!divi", "【占い】"], description: "占いするやで"},
     { name: "keyChusen", kind: "other", command: ["【抽選】"], description: "抽選するやで。\nさいころ君のリプに✋のリアクションした人の中から一人選ぶ。\n🔄押したら抽選開始。\n受付時間は5分。"},
     { name: "keyChusenUketsuke", kind: "other", command: ["【抽選受付】"], description: ""},
@@ -29,4 +30,36 @@ const commands = [
     { name: "chatGPT", kind: "chat", command: ["!c", "【会話】"], description: "さいころ君とお話できるやで。\nお返事に返信してくれたら対話が続くやで。"},
     ];
 
-module.exports = {commands}
+    /**
+     * メッセージがコマンドであれば、コマンド名を返す
+     * @param {string} message 
+     * @returns {string} コマンド名
+     */
+    function getCommand(message){
+        let command = '';
+        commands.forEach(e => {
+            e.command.forEach(comm => {
+                if(message.startsWith(comm)) command = e.name;
+            });
+        });
+        return command;
+    }
+
+    /**
+     * メッセージから命令後を削除して本文を抽出
+     * @param {string} message discord.jsのメッセージオブジェクト
+     * @param {string} commandName コマンド名
+     * @returns {string} 命令後を削除した本文
+     */
+    function getBodyText(message, commandName){
+        // メッセージから命令後を削除して本文を抽出
+        let commandKeys = commands.find(c => c.name === commandName)?.command;
+        if(!commandKeys) return '';
+        commandKeys.forEach(key => {
+            message = message.replace(key, '');
+        });
+        message = message.replace(/(^ +)|(^　+)/, '');
+        return message;
+    }
+
+module.exports = {commands, getCommand, getBodyText};
