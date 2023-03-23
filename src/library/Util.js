@@ -32,13 +32,19 @@ class Util{
     }
 
     /**
-     * ログを出力する
-     * 2023年1月1日0時0分0秒 [DICE] 1d100 <= 20 
-     * @param {string} classification 
-     * @param {string} text 
+     * 日付を付けてログを出力する
+     * 2023年1月1日0時0分0秒...
+     * @param {*} arguments 可変パラメータ
      */
-    static log(text){
-        console.log(`${this.getTime()[0]} ${text.includes('\n') ? '\n'+text : text}`);
+    static log(){
+        let args = [];
+        if(arguments.length >= 1){
+            Object.keys(arguments).forEach(key=>{
+                args.push(arguments[key]);
+            });
+            args[0] = args[0].includes('\n') ? '\n'+args[0] : args[0];    
+        }
+        console.log(this.getTime()[0], ...args);
     }
 
     /**

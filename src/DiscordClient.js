@@ -1,9 +1,10 @@
-const { Client, Events } = require('discord.js');
+const { Client, Events, User } = require('discord.js');
 const { Util } = require('./library/Util');
 const { DiscordUtil } = require('./library/DiscordUtil');
 const { commands, getCommand, getBodyText } = require('./library/command');
 const { Random } = require('./library/Random');
 const { Divination } = require('./library/Divination');
+const { ChatGPT } = require('./library/ChatGPT');
 const { Lottery } = require('./library/discord/Lottery');
 
 /**
@@ -32,7 +33,7 @@ class DiscordClient{
         this.client.on(Events.MessageCreate, async msg => {
             // !startコマンドのみここで解析
             if(!this.acceptable && 
-                msg.author.id === process?.env['ADMINISTRATOR_DISCORD_ID'] && 
+                DiscordUtil.isAdministrator(msg.author) && 
                 getCommand(msg.content) === 'keyStart') this.acceptable = true;
             if(this.acceptable) this.parseMessage(msg);
         });
@@ -51,19 +52,39 @@ class DiscordClient{
 
     /**
      * メッセージを解析して、コマンドだった場合実行結果を取得し、msgにリプライする
-     * @param {*} msg 
+     * @param {Message} msg 
      * @returns 
      */
     async parseMessage(msg){
+        // botのメッセージは処理しない
+        if(msg.author.bot) return;
+
+        // コマンドメッセージの場合コマンドを取得
         let command = getCommand(msg.content);
-        let message = getBodyText(msg.content, command);
-        if (!command) return ;
+
+        // メッセージが返信の場合、返信元の一番最初のメッセージのコマンドを取得する
+        let messages = [msg];
+        if(!command && msg.reference){
+            let msg_p = msg;
+            let chan = await this.client.channels.fetch(msg.channelId);
+            while(msg_p.reference){
+                msg_p = await chan.messages.fetch(msg_p.reference.messageId);
+                if(msg_p) messages.push(msg_p);
+            }
+            messages.reverse();
+            command = getCommand(messages[0].content);
+        }
+
+        // コマンドメッセージではない場合は処理しない
+        if(!command) return;
+
+        let bodyText = getBodyText(msg.content, command);
         let response;
 
         switch (command) {
             case "keyDiceRoll" : // ダイスロール
                 if(!this.Random) this.Random = new Random();
-                response = await this.Random.rollDice(message);
+                response = await this.Random.rollDice(bodyText);
                 if(response){
                     let style;
                     if (response.isComparison) {
@@ -73,38 +94,40 @@ class DiscordClient{
                         style = {normal:true};
                     }
                     DiscordUtil.replyCodeText(msg, [{text:response.text, style}]);
+                }else{
+                    DiscordUtil.replyErrorMessage(msg);
                 }
                 break;
-            case "keyStop" :
-                if(msg.author.id === process?.env['ADMINISTRATOR_DISCORD_ID']){
+            case "keyStop" : // さいころ君停止機能
+                if(DiscordUtil.isAdministrator(msg.author)){
                     Util.log('さいころ君停止コマンド');
                     await msg.reply('さいころ君を停止します');
                     this.acceptable = false;
                 }
                 break;
-            case "keyStart" :
-                if(msg.author.id === process?.env['ADMINISTRATOR_DISCORD_ID']){
+            case "keyStart" : // さいころ君再開機能
+                if(DiscordUtil.isAdministrator(msg.author)){
                     Util.log('さいころ君再稼働コマンド');
                     await msg.reply('さいころ君を再稼働します');
                 }
                 break;
-            case "keyUranai" :
+            case "keyUranai" : // 占い機能
                 if(!this.Divination) this.Divination = new Divination();
                 response = await this.Divination.doDivination(msg.author.username);
                 if(response) DiscordUtil.replyCodeText(msg, [{text:response, style:{normal:true}}]);
                 break;
-            case "keyChusen" :
+            case "keyChusen" : // 抽選機能
                 if(!this.Lottery) this.Lottery = new Lottery();
                 this.Lottery.acceptLots(msg);
                 break;
-            case "keySuimin" :
+            case "keySuimin" : // 睡眠チャレンジ
                 if(!this.Random) this.Random = new Random();
-                response = await this.Random.goToBed(message);                
+                response = await this.Random.goToBed(bodyText);                
                 DiscordUtil.replyCodeText(msg, [response]);
                 break;
             case "keyPokeFromNameShousai" :
                 break;
-            case "keyHelp" :
+            case "keyHelp" : // ヘルプ表示機能
                 let textArr = [];
                 textArr.push({
                     text: 'さいころ君で使えるコマンド一覧です。\nコマンド名：コマンド1, コマンド2, ...'
@@ -161,15 +184,42 @@ class DiscordClient{
                 break;
             case "keyTimer" :
                 break;
-            case "chatGPT" :
+            case "chatGPT" : // chatGPTでおしゃべり機能
+                // 受付完了のリアクション
+                msg.react(Util.emoji.arrows_counterclockwise);
+
+                // リプライツリーをchatGPT用に整形
+                messages = messages.map(messageIt => {
+                    return {
+                        role: messageIt.author.bot ? 'assistant' : 'user',
+                        content: getBodyText(messageIt.content, command)
+                    }
+                });
+                // 管理者以外は1000文字までの制限付き
+                if(!DiscordUtil.isAdministrator(msg.author)){
+                    while(messages.length!==1 && messages.reduce((sum,message)=>message.content.length+sum,0)>=1000){
+                        messages = messages.slice(1);
+                    }
+                }
+
+                // chatGPTの返答を取得
+                if(!this.ChatGPT) this.ChatGPT = new ChatGPT();
+                response = await this.ChatGPT.getAnswer(messages);
+
+                // リプライ
+                if(response) await DiscordUtil.replyText(msg, response);
+                else await DiscordUtil.replyErrorMessage(msg);
+
+                // 受付完了リアクション除去
+                msg.reactions.resolve(Util.emoji.arrows_counterclockwise).users.remove(this.client.user.id);
                 break;
         }
 
     }
     
-    isRestartCommand(msg){
+    
 
-    }
+
 
 
 }
