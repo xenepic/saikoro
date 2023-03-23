@@ -28,8 +28,8 @@ class DiscordUtil {
 
     /**
      * メッセージに平文をリプライする。
-     * @param {Message} msg 
-     * @param {string} text 
+     * @param {Message} msg 返信するDiscordメッセージオブジェクト
+     * @param {string} text 返信するテキスト
      * @returns {Message}
      */
     static async replyText(msg, text){
@@ -210,6 +210,24 @@ class DiscordUtil {
         messageObj.embeds = [embed];
         
         return messageObj;
+    }
+
+    /**
+     * エラーメッセージをリプライする
+     * @param {Message} msg 
+     * @param {string} errorMessage 
+     */
+    static replyErrorMessage(msg, errorMessage = 'エラーやわ'){
+        msg.reply(errorMessage);
+    }
+
+    /**
+     * メッセージの送信者が管理者かどうか判定する
+     * @param {User} author 
+     * @returns {boolean}
+     */
+    static isAdministrator(author){
+        return author.id === process?.env['ADMINISTRATOR_DISCORD_ID'];
     }
 }
 
