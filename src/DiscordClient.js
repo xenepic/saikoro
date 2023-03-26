@@ -1,4 +1,4 @@
-const { Client, Events, User } = require('discord.js');
+const { Client, Events, User, EmbedBuilder } = require('discord.js');
 const { Util } = require('./library/Util');
 const { DiscordUtil } = require('./library/DiscordUtil');
 const { commands, getCommand, getBodyText } = require('./library/command');
@@ -6,6 +6,7 @@ const { Random } = require('./library/Random');
 const { Divination } = require('./library/Divination');
 const { ChatGPT } = require('./library/ChatGPT');
 const { Lottery } = require('./library/discord/Lottery');
+const { DiscordWeatherForecast } = require('./library/discord/DiscordWeatherForecast');
 
 /**
  * discordのclientクラス
@@ -38,9 +39,6 @@ class DiscordClient{
             if(this.acceptable) this.parseMessage(msg);
         });
 
-        // リアクション付与検出時の処理
-
-
         // クライアントログイン完了時の処理
         this.client.on(Events.ClientReady, () => {
             Util.log(`${this.client.user.tag} でログインしています。`);
@@ -56,6 +54,28 @@ class DiscordClient{
      * @returns 
      */
     async parseMessage(msg){
+        if(msg.content.startsWith('!test')){
+            const empty = Util.emoji['space'];
+            const sunny = Util.emoji['sunny'];
+            const left = Util.emoji['arrow_left'];
+            const right = Util.emoji['arrow_right'];
+            const red = DiscordUtil.makeStyleKeyword({color:'red'});
+            const blue = DiscordUtil.makeStyleKeyword({color:'blue'}); 
+            let embed = new EmbedBuilder()
+            .setTitle('京都')
+            .setDescription(`3/1(日)の天気`)
+            .addFields({ name: '21時　'+sunny+'　　'+empty, value: "```ansi\n" + `\n${red}15℃\n${blue}0%` + "\n```", inline: true })
+            .addFields({ name: '21時　'+sunny+'　　'+empty, value: "```ansi\n" + `\n${red}15℃\n${blue}0%` + "\n```", inline: true })
+            .addFields({ name: '21時　'+sunny+'　　'+empty, value: "```ansi\n" + `\n${red}15℃\n${blue}0%` + "\n```", inline: true })
+            .addFields({ name: '21時　'+sunny+'　　'+empty, value: "```ansi\n" + `\n${red}15℃\n${blue}0%` + "\n```", inline: true })
+            .addFields({ name: '21時　'+sunny+'　　'+empty, value: "```ansi\n" + `\n${red}15℃\n${blue}0%` + "\n```", inline: true })
+            .addFields({ name: '21時　'+sunny+'　　'+empty, value: "```ansi\n" + `\n${red}15℃\n${blue}0%` + "\n```", inline: true })
+            .setFooter({text: `${left}2/28(土)　　　　　　　　　　　　3/2(月)${right}`});
+            let rep = await DiscordUtil.replyEmbed(msg, embed);
+            await rep.react(left);
+            await rep.react(right);
+        }
+
         // botのメッセージは処理しない
         if(msg.author.bot) return;
 
@@ -149,6 +169,7 @@ class DiscordClient{
                 DiscordUtil.replyComplexText(msg, textArr);
                 break;
             case "keyWeather" :
+                DiscordWeatherForecast.showWeatherForecast(msg, bodyText);
                 break;
             case "keyLuna" :
                 break;

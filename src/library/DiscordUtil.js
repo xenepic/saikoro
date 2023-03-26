@@ -61,7 +61,7 @@ class DiscordUtil {
             let text = '';
 
             textArray.forEach(it => {
-                text += DiscordUtil._makeStyleKeyword(it.style) + it.text;
+                text += DiscordUtil.makeStyleKeyword(it.style) + it.text;
             });
 
             let replyText = '```ansi\n' + text + '\n```';
@@ -108,7 +108,7 @@ class DiscordUtil {
                 else{
                     let codeBlock = '';
                     it.codeArray.forEach(code => {
-                        codeBlock += DiscordUtil._makeStyleKeyword(code.style) + code.text;
+                        codeBlock += DiscordUtil.makeStyleKeyword(code.style) + code.text;
                     });
                     text += '```ansi\n' + codeBlock + '\n```';                    
                 }
@@ -122,7 +122,7 @@ class DiscordUtil {
         
     }
 
-    static _makeStyleKeyword(style){
+    static makeStyleKeyword(style){
         if(!style) return '';
         let keyword =[];
         
