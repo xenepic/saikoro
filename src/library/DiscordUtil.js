@@ -179,7 +179,7 @@ class DiscordUtil {
         // Util.log(`[EMBED]:${embed.data.title}`);
         messageObj.files = [];
 
-        if(!embed.color) embed.setColor(0x0099FF);
+        if(!embed.data?.color && !embed?.color) embed.setColor(0x0099FF);
         // 添付画像
         if(imageUrls?.image){
             let ext = imageUrls.image.split('.').pop();
@@ -199,13 +199,15 @@ class DiscordUtil {
             messageObj.files.push(thumbnail);
         }
         // さいころ君の画像
-        let authorIconUrl = './images/saikoro.png';
-        let ext = authorIconUrl.split('.').pop();
-        const authorIcon = new AttachmentBuilder()
-            .setName('authorIconFile.' + ext)
-            .setFile(authorIconUrl);
-        embed.setAuthor({ name: 'さいころ君', iconURL: 'attachment://authorIconFile.' + ext});
-        messageObj.files.push(authorIcon);
+        if(!embed.data?.author && !embed?.author){
+            let authorIconUrl = './images/saikoro.png';
+            let ext = authorIconUrl.split('.').pop();
+            const authorIcon = new AttachmentBuilder()
+                .setName('authorIconFile.' + ext)
+                .setFile(authorIconUrl);
+            embed.setAuthor({ name: 'さいころ君', iconURL: 'attachment://authorIconFile.' + ext});
+            messageObj.files.push(authorIcon);
+        }
 
         messageObj.embeds = [embed];
         

@@ -98,7 +98,8 @@ class DiscordWeatherForecast {
 
             let embed = new EmbedBuilder()
             .setTitle(weatherInfo.locationName)
-            .setDescription(`${weatherInfo.dates[(index+1)%8]}の天気`);
+            .setDescription(`${weatherInfo.dates[(index+1)%8]}の天気`)
+            .setURL('https://open-meteo.com/');
 
             for(let i=0;i<6;i++){
                 const hour = 6+i*3;
@@ -129,7 +130,8 @@ class DiscordWeatherForecast {
 
             let embed = new EmbedBuilder()
             .setTitle(weatherInfo.locationName)
-            .setDescription(`一週間の天気`);
+            .setDescription(`一週間の天気`)
+            .setURL('https://open-meteo.com/');
 
             for(let i=0;i<6;i++){
                 const weatherEmoji = WeatherForecast.getWeatherEmoji(weatherInfo.daily.weathercode[i]);
