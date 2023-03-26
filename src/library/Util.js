@@ -75,6 +75,16 @@ class Util{
         return arr[Util.getRandomInt(arr.length)];
     }
 
+    /**
+     * i mod j（剰余）を計算する
+     * @param {*} i 
+     * @param {*} j 
+     * @returns {int}
+     */
+    static mod(i, j) {
+        return (i % j) < 0 ? (i % j) + 0 + (j < 0 ? -j : j) : (i % j + 0);
+    }
+
 
     static emoji = {
         space: '\u200B',

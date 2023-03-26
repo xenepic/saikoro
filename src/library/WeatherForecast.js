@@ -50,6 +50,11 @@ class WeatherForecast {
                 }
             });
 
+            if(response.status !== 200){
+                Util.error(response);
+                return;
+            }
+
             // 天気を取得した場所名を追加
             response.data.locationName = locationName;
 

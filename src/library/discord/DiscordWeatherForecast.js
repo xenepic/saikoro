@@ -7,8 +7,6 @@ const { WeatherForecast } = require('../WeatherForecast');
 
 class DiscordWeatherForecast {
 
-
-
     static async showWeatherForecast(msg, location){
         try{
             const left = Util.emoji['arrow_left'];
@@ -21,8 +19,14 @@ class DiscordWeatherForecast {
                 weeklater.setDate(weeklater.getDate() + 7);
                 weeklater = Util.getTime(weeklater).slice(1,4).join('-')
                 
-                // 今日から一週間分の天気情報を取得
+                // 一週間分の天気情報を取得
                 const weatherInfo = await WeatherForecast.getWeatherForecastInfo(location, today, weeklater);
+
+                // 天気情報を取得出来ていなかった場合は終了
+                if(!weatherInfo){
+                    DiscordUtil.replyErrorMessage(msg, "場所探せへんかったみたいやわ");
+                    return;
+                }
 
                 // 週間天気と一週間分の日付文字列を生成してweatherInfoに付加
                 let dates = [];
@@ -42,9 +46,7 @@ class DiscordWeatherForecast {
                     embeds.push(await DiscordWeatherForecast.getOneDayWeatherEmbed(weatherInfo, i));
                 }
                 
-                let index = 1;
-                console.log("debug: ", embeds[index]);
-                console.log("debug: ", embeds);
+                let index = 0;
                 let rep = await DiscordUtil.replyEmbed(msg, embeds[index]);
 
                 await rep.react(left);
@@ -59,12 +61,12 @@ class DiscordWeatherForecast {
                     let emoji = reaction.emoji.name;
                     switch(emoji){
                         case left:
-                            DiscordUtil.editEmbed(rep, embeds[(index-1)%8]);
-                            index = (index-1)%8;
+                            index = Util.mod(index-1, 8);
+                            DiscordUtil.editEmbed(rep, embeds[index]);                            
                             break;
                         case right:
-                            DiscordUtil.editEmbed(rep, embeds[(index+1)%8]);
-                            index = (index+1)%8;
+                            index = Util.mod(index+1, 8);
+                            DiscordUtil.editEmbed(rep, embeds[index]);                            
                             break;
                     }
 
@@ -88,16 +90,11 @@ class DiscordWeatherForecast {
 
     static async getOneDayWeatherEmbed(weatherInfo, index){
         try{
-            console.log('debug index:', index);
             const left = Util.emoji['arrow_left'];
             const right = Util.emoji['arrow_right'];
             const empty = Util.emoji['space'];
             const red = DiscordUtil.makeStyleKeyword({color:'red'});
             const blue = DiscordUtil.makeStyleKeyword({color:'blue'});
-
-            // 日付文字列を取得
-            let date = weatherInfo.hourly.time[index*24].split('T')[0].split('-');
-            date = `${date[0]}年${date[1]}月${date[2]}日`;
 
             let embed = new EmbedBuilder()
             .setTitle(weatherInfo.locationName)
@@ -121,7 +118,34 @@ class DiscordWeatherForecast {
     }
 
     static async getWeekWeatherEmbed(weatherInfo){
-        return await DiscordWeatherForecast.getOneDayWeatherEmbed(weatherInfo, 0);
+        try{
+            const left = Util.emoji['arrow_left'];
+            const right = Util.emoji['arrow_right'];
+            const empty = Util.emoji['space'];
+            const red = DiscordUtil.makeStyleKeyword({color:'red'});
+            const blue = DiscordUtil.makeStyleKeyword({color:'blue'});
+            const water = DiscordUtil.makeStyleKeyword({color:'water'});
+            const normal = DiscordUtil.makeStyleKeyword({normal:true});
+
+            let embed = new EmbedBuilder()
+            .setTitle(weatherInfo.locationName)
+            .setDescription(`一週間の天気`);
+
+            for(let i=0;i<6;i++){
+                const weatherEmoji = WeatherForecast.getWeatherEmoji(weatherInfo.daily.weathercode[i]);
+                const temperature_max = weatherInfo.daily.temperature_2m_max[i] + weatherInfo.daily_units.temperature_2m_max;
+                const temperature_min = weatherInfo.daily.temperature_2m_min[i] + weatherInfo.daily_units.temperature_2m_min;
+                const probability = weatherInfo.daily.precipitation_probability_max[i] + weatherInfo.daily_units.precipitation_probability_max;
+                embed.addFields({ name: `${weatherInfo.dates[i+1]}　`+weatherEmoji+'　　'+empty, value: "```ansi\n" + `\n${red}${temperature_max}${normal}/${blue}${temperature_min}\n${water}${probability}` + "\n```", inline: true });
+            }
+            embed.setFooter({text: `${left}${weatherInfo.dates[7]}　　　　　　　　　　　　　　　　　　　　${weatherInfo.dates[1]}${right}`});
+
+            return embed;
+
+        }catch(e){
+            Util.error(e);
+            return;
+        }
     }
 
     static async getNationalOneDayWeatherEmbed(date){
