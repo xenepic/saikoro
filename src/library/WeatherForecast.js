@@ -103,9 +103,4 @@ class WeatherForecast {
 
 }
 
-// WeatherForecast.getWeatherForecastInfo('東京')
-// .then(info=>{
-//     console.log(info);
-// })
-
 module.exports = { WeatherForecast };
