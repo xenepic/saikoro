@@ -11,24 +11,22 @@ class Util{
 
     /**
      * 現在日時を返す
-     * @returns ['2023年01月01日00時00分00秒', '2023-1-1_0:0:0']
+     * @returns ['2023年01月01日00時00分00秒', ...]
      */
-    static getTime(){
-        const date1 = new Date();
-        const date2 = date1.getFullYear()                   + "年" +
-            this.padding((date1.getMonth() + 1), '0', 2)    + "月" +
-            this.padding(date1.getDate(), '0', 2)           + "日" +
-            this.padding(date1.getHours(), '0', 2)          + "時" +
-            this.padding(date1.getMinutes(), '0', 2)        + "分" +
-            this.padding(date1.getSeconds(), '0', 2)        + "秒";
-        const date3 = date1.getFullYear() + "-" +
-            this.padding((date1.getMonth() + 1), '0', 2) + "-" +
-            this.padding(date1.getDate(), '0', 2) + "_" +
-            this.padding(date1.getHours(), '0', 2) + ":" +
-            this.padding(date1.getMinutes(), '0', 2) + ":" +
-            this.padding(date1.getSeconds(), '0', 2);
+    static getTime(standard){
+        let date1;
+        if(standard) date1 = new Date(standard);
+        else date1 = new Date();
+        const year = date1.getFullYear();
+        const month = this.padding((date1.getMonth() + 1), '0', 2);
+        const date = this.padding(date1.getDate(), '0', 2);
+        const hours = this.padding(date1.getHours(), '0', 2);
+        const minutes = this.padding(date1.getMinutes(), '0', 2);
+        const seconds = this.padding(date1.getSeconds(), '0', 2);
+        const dayOfWeek = date1.getDay();
+        const date2 = `${year}年${month}月${date}日${hours}時${minutes}分${seconds}秒`;
 
-        return [date2, date3];
+        return [date2, year, month, date, hours, minutes, seconds, dayOfWeek];
     }
 
     /**
@@ -77,11 +75,42 @@ class Util{
         return arr[Util.getRandomInt(arr.length)];
     }
 
+    /**
+     * i mod j（剰余）を計算する
+     * @param {*} i 
+     * @param {*} j 
+     * @returns {int}
+     */
+    static mod(i, j) {
+        return (i % j) < 0 ? (i % j) + 0 + (j < 0 ? -j : j) : (i % j + 0);
+    }
+
 
     static emoji = {
+        space: '\u200B',
         raised_hand: '✋',
         arrows_counterclockwise: '🔄',
-        arrow_right: '➡️'
+        arrow_right: '▶️',
+        arrow_left: '◀️',
+        sunny: '☀️',
+        white_sun_small_cloud: '🌤️',
+        partly_sunny: '⛅',
+        white_sun_cloud: '🌥️',
+        white_sun_rain_cloud: '🌦️',
+        cloud: '☁️',
+        cloud_rain: '🌧️',
+        white_sun_rain_cloud: '🌦️',
+        umbrella2: '☂️',
+        closed_umbrella: '🌂',
+        umbrella: '☔',
+        cloud_snow: '🌨️',
+        snowman2: '☃️',
+        cyclone: '🌀',
+        cloud_tornado: '🌪️',
+        fog: '🌫️',
+        zap: '⚡',
+        cloud_lightning: '🌩️',
+        thunder_cloud_rain: '⛈️',
     };
 }
 

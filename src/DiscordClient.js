@@ -1,4 +1,4 @@
-const { Client, Events, User } = require('discord.js');
+const { Client, Events, User, EmbedBuilder } = require('discord.js');
 const { Util } = require('./library/Util');
 const { DiscordUtil } = require('./library/DiscordUtil');
 const { commands, getCommand, getBodyText } = require('./library/command');
@@ -6,6 +6,7 @@ const { Random } = require('./library/Random');
 const { Divination } = require('./library/Divination');
 const { ChatGPT } = require('./library/ChatGPT');
 const { Lottery } = require('./library/discord/Lottery');
+const { DiscordWeatherForecast } = require('./library/discord/DiscordWeatherForecast');
 
 /**
  * discordのclientクラス
@@ -38,9 +39,6 @@ class DiscordClient{
             if(this.acceptable) this.parseMessage(msg);
         });
 
-        // リアクション付与検出時の処理
-
-
         // クライアントログイン完了時の処理
         this.client.on(Events.ClientReady, () => {
             Util.log(`${this.client.user.tag} でログインしています。`);
@@ -56,6 +54,7 @@ class DiscordClient{
      * @returns 
      */
     async parseMessage(msg){
+
         // botのメッセージは処理しない
         if(msg.author.bot) return;
 
@@ -149,6 +148,7 @@ class DiscordClient{
                 DiscordUtil.replyComplexText(msg, textArr);
                 break;
             case "keyWeather" :
+                DiscordWeatherForecast.showWeatherForecast(msg, bodyText);
                 break;
             case "keyLuna" :
                 break;

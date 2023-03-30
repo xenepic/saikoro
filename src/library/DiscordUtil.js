@@ -61,7 +61,7 @@ class DiscordUtil {
             let text = '';
 
             textArray.forEach(it => {
-                text += DiscordUtil._makeStyleKeyword(it.style) + it.text;
+                text += DiscordUtil.makeStyleKeyword(it.style) + it.text;
             });
 
             let replyText = '```ansi\n' + text + '\n```';
@@ -108,7 +108,7 @@ class DiscordUtil {
                 else{
                     let codeBlock = '';
                     it.codeArray.forEach(code => {
-                        codeBlock += DiscordUtil._makeStyleKeyword(code.style) + code.text;
+                        codeBlock += DiscordUtil.makeStyleKeyword(code.style) + code.text;
                     });
                     text += '```ansi\n' + codeBlock + '\n```';                    
                 }
@@ -122,7 +122,7 @@ class DiscordUtil {
         
     }
 
-    static _makeStyleKeyword(style){
+    static makeStyleKeyword(style){
         if(!style) return '';
         let keyword =[];
         
@@ -179,7 +179,7 @@ class DiscordUtil {
         // Util.log(`[EMBED]:${embed.data.title}`);
         messageObj.files = [];
 
-        if(!embed.color) embed.setColor(0x0099FF);
+        if(!embed.data?.color && !embed?.color) embed.setColor(0x0099FF);
         // 添付画像
         if(imageUrls?.image){
             let ext = imageUrls.image.split('.').pop();
@@ -199,13 +199,15 @@ class DiscordUtil {
             messageObj.files.push(thumbnail);
         }
         // さいころ君の画像
-        let authorIconUrl = './images/saikoro.png';
-        let ext = authorIconUrl.split('.').pop();
-        const authorIcon = new AttachmentBuilder()
-            .setName('authorIconFile.' + ext)
-            .setFile(authorIconUrl);
-        embed.setAuthor({ name: 'さいころ君', iconURL: 'attachment://authorIconFile.' + ext});
-        messageObj.files.push(authorIcon);
+        if(!embed.data?.author && !embed?.author){
+            let authorIconUrl = './images/saikoro.png';
+            let ext = authorIconUrl.split('.').pop();
+            const authorIcon = new AttachmentBuilder()
+                .setName('authorIconFile.' + ext)
+                .setFile(authorIconUrl);
+            embed.setAuthor({ name: 'さいころ君', iconURL: 'attachment://authorIconFile.' + ext});
+            messageObj.files.push(authorIcon);
+        }
 
         messageObj.embeds = [embed];
         
