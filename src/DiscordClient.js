@@ -29,7 +29,7 @@ class DiscordClient{
     /**
      * 初期処理
      */
-    init(){
+    async init(){
         // メッセージ検出時の処理
         this.client.on(Events.MessageCreate, async msg => {
             // !startコマンドのみここで解析
