@@ -3,6 +3,16 @@
 もともとはTRPGで使う1d6などのダイスロールをDiscordで使えるように開発したものですが、
 色々な機能を付け足していった結果、よく分からない多機能BOTになりました。
 
+# 使い方
+1. `git clone git@github.com:xenepic/saikoro.git`
+2. npm install
+3. .envファイルを作成し、`DISCORD_BOT_TOKEN = XXXXXX(botのトークン)`
+4. `node index.js`
+で起動します。
+
+
+
+
 # 主な機能一覧
 ### ダイスロール
 !d 1d6 6面ダイスを一度振ります。
