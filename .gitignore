@@ -1,0 +1,6 @@
+.env
+discordData - コピー.csv
+discordData.csv
+forever.log
+node_modules/
+dist/
