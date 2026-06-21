@@ -1,45 +1,32 @@
 import OpenAI from 'openai';
-import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
-import type { Message } from 'discord.js';
 import type { Command } from '../discord/types';
 import { env } from '../config/env';
 
 const keyChatGPT = '!c';
-const historyLimit = 10;
 
 /**
- * スレッド内の直近のメッセージ(最大historyLimit件、古い順)から会話履歴を組み立てる。
- * 返信チェーンを遡る旧実装と違い、スレッドの直近メッセージをまとめて1回のAPI呼び出しで
- * 取得するだけなので、メッセージ毎に再帰処理が走ることはない。
+ * スレッドID→直前のResponse IDのマップ。
+ * プロセスのメモリ上だけで保持しており、デプロイ等でBotが再起動すると
+ * 進行中の会話スレッドは文脈を失う(エラーにはならず、新規の会話として応答するだけ)。
  */
-async function buildHistory(threadMessage: Message): Promise<ChatCompletionMessageParam[]> {
-  const fetched = await threadMessage.channel.messages.fetch({ limit: historyLimit, before: threadMessage.id });
-  const ordered = [...fetched.values()].reverse();
-  const history: ChatCompletionMessageParam[] = ordered.map((m) => ({
-    role: m.author.bot ? 'assistant' : 'user',
-    content: m.content,
-  }));
-  history.push({ role: 'user', content: threadMessage.content });
-  return history;
-}
+const threadResponseIds = new Map<string, string>();
 
 /**
  * !c ChatGPTとおしゃべりする。
- * !cで話しかけるとスレッドが作られ、そのスレッド内での発言は!c無しで会話を継続できる
- * (直近historyLimit件を会話履歴として送る)。
- * 以前は返信チェーンを遡って会話履歴を組み立てていたが、すべての受信メッセージに対して
- * 毎回チェーンを遡る処理が走ってしまい無駄が大きく、トークン数による履歴間引きにも
- * バグがあったため撤廃していた。スレッド単位にすることで、その問題を再発させずに
- * 会話継続を実現している。
+ * !cで話しかけるとスレッドが作られ、そのスレッド内での発言は!c無しで会話を継続できる。
+ * Responses APIの`previous_response_id`で会話履歴をOpenAI側に委ねているため、
+ * こちらでメッセージ履歴を組み立てる必要はない。
+ * 必要に応じてWeb検索ツール(web_search)を使えるようにしている(tool_choice: "auto"なので
+ * 検索が要らない会話では使われない)。
  */
 export const chatGptCommand: Command = {
   name: 'chatgpt',
   async handle(message) {
     const isThreadMessage = message.channel.isThread();
+    const previousResponseId = isThreadMessage ? threadResponseIds.get(message.channel.id) : undefined;
 
     if (isThreadMessage) {
-      const starter = await message.channel.fetchStarterMessage().catch(() => null);
-      if (!starter || !starter.content.startsWith(keyChatGPT)) return;
+      if (!previousResponseId) return;
     } else if (!message.content.startsWith(keyChatGPT)) {
       return;
     }
@@ -50,24 +37,26 @@ export const chatGptCommand: Command = {
     }
 
     const openai = new OpenAI({ apiKey: env.openaiApiKey });
+    const ask = isThreadMessage ? message.content : message.content.slice(keyChatGPT.length).trim();
 
     try {
-      const history = isThreadMessage
-        ? await buildHistory(message)
-        : [{ role: 'user', content: message.content.slice(keyChatGPT.length).trim() } as ChatCompletionMessageParam];
-
-      const res = await openai.chat.completions.create({
+      const res = await openai.responses.create({
         model: 'gpt-4o-mini',
-        messages: history,
+        input: ask,
+        previous_response_id: previousResponseId,
+        tools: [{ type: 'web_search' }],
+        tool_choice: 'auto',
       });
-      const answer = res.choices[0].message?.content ?? 'なんも言えんかったわ。';
-      console.log(`「${history[history.length - 1].content}」\n「${answer}」`);
+      const answer = res.output_text || 'なんも言えんかったわ。';
+      console.log(`「${ask}」\n「${answer}」`);
       console.log('total tokens:', res.usage?.total_tokens);
 
       if (isThreadMessage) {
+        threadResponseIds.set(message.channel.id, res.id);
         await message.reply(answer);
       } else {
         const thread = await message.startThread({ name: 'ChatGPTとおしゃべり' });
+        threadResponseIds.set(thread.id, res.id);
         await thread.send(answer);
       }
     } catch (e) {
