@@ -42,10 +42,10 @@ export const weatherCommand: Command = {
   async handle(message) {
     if (!message.content.startsWith(keyWeather)) return;
 
-    const searchWords = message.content.replace(keyWeather, '').replace(/　/g, ' ').split(' ');
+    const searchWords = message.content.replace(keyWeather, '').replace(/　/g, ' ').trim().split(' ').filter((w) => w !== '');
     const isWeekly = searchWords.some((e) => e === '週間');
     const isDetail = (searchWords.length === 3) || (searchWords.length === 2 && !isWeekly);
-    const prefNameInput = searchWords[0] === '' ? '東京' : searchWords[0];
+    const prefNameInput = searchWords[0] ?? '東京';
     const regionNameInput = isDetail ? searchWords[1] : '';
 
     const { prefNo, regionNo } = resolvePrefAndRegion(prefNameInput, regionNameInput, isDetail);
