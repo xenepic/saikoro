@@ -15,6 +15,8 @@
    本番運用: `npm run build && npm start`
 で起動します。
 
+VPSへの本番デプロイ手順は[DEPLOY.md](./DEPLOY.md)を参照してください。
+
 
 
 
