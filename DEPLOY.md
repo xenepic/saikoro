@@ -45,6 +45,13 @@ pm2 restart saikoro
 
 PM2を使わず、systemdで直接プロセスを管理したい場合は`deploy/saikoro.service`を参考にしてください(`/etc/systemd/system/`へ配置し、パスとユーザーを実環境に合わせて編集)。
 
-## 補足: GitHub Actionsでの自動デプロイ
+## 5. GitHub Actionsによる自動デプロイ(導入済み)
 
-`git push`時に自動でVPSへデプロイしたい場合は、GitHub ActionsからSSHで上記4の手順を実行するワークフローを別途追加できます(VPSのホスト・SSH鍵をGitHub Secretsに登録する必要があります)。必要であれば作成しますので、その際は声をかけてください。
+`main`ブランチへの`git push`をトリガーに、GitHub Actions(`.github/workflows/deploy.yml`)がSSH経由でVPS上の上記4の手順(`git pull` → `npm ci` → `npm run build` → `pm2 restart saikoro`)を自動実行する。
+
+- 使用アクション: `appleboy/ssh-action`
+- 接続先・認証情報はリポジトリのGitHub Secretsに登録(`DEPLOY_HOST` / `DEPLOY_USER` / `DEPLOY_SSH_KEY`)
+- VPS側はデプロイ専用のSSH鍵を使用し、`~/.ssh/authorized_keys`で実行可能コマンドを上記の固定コマンドのみに制限している(`command="..."`のforced command形式)。鍵が漏洩してもログインシェルの取得や任意コマンド実行はできない
+- ワークフロー内の`script`の内容はforced commandにより無視され、実際にはVPS側で固定された手順のみが実行される
+
+通常運用では`main`へpushするだけで反映され、手動でのSSHログインや上記4の手順を都度実行する必要はない。

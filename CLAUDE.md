@@ -29,11 +29,12 @@ npm run format   # Prettier
 
 MySQLサーバーが`saikoro`データベースで稼働している必要がある(`knexfile.js`参照、接続情報は環境変数化済み)。
 
-テスト・CIは現状存在しない。
+テストは現状存在しない。CI(テスト実行)もないが、`main`へのpushをトリガーにVPSへ自動デプロイするCDパイプラインは存在する(`.github/workflows/deploy.yml`、詳細は[DEPLOY.md](./DEPLOY.md)参照)。
 
 ## ディレクトリ構成
 
 ```
+.github/workflows/deploy.yml   # mainへのpushでVPSへ自動デプロイ(SSH経由、DEPLOY.md参照)
 src/
   index.ts          # bootstrap: Discordクライアント生成・ログイン・イベント登録
   config/env.ts      # 環境変数の読み込みとバリデーション
